@@ -1,106 +1,242 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
-
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
-      </q-toolbar>
-    </q-header>
-
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
-      <q-list>
-        <q-item-label
-          header
+  <div class="container">
+    <div class="inputBtn">
+      <q-input
+        v-model="newtask"
+        label="Add your task here"
+        class="newinput"
+      ></q-input>
+      <q-btn class="button" @click="add">add task</q-btn>
+      <q-list :style="style" class="list">
+        <q-item
+          class="item"
+          v-for="(task, index) in tasks"
+          :key="index"
+          :style="itemStyle"
         >
-          Essential Links
-        </q-item-label>
+          <input
+            :style="
+              taskeditVisible === index
+                ? taskeditStyle.taskeditBGwhite
+                : taskeditStyle.taskeditBGwheat
+            "
+            v-model="tasks[index]"
+            v-if="taskeditVisible === index"
+            label="Edit your task:"
+          />
+          <p
+            :style="
+              IsparaVisible === index
+                ? paraStyle.paraBGwhite
+                : paraStyle.paraBGwheat
+            "
+            v-if="IsparaVisible === index ? false : true"
+          >
+            {{ task }}
+          </p>
+          <span class="icons">
+            <q-icon
+              class="icon"
+              color="red"
+              v-if="IsVisibleRemove"
+              @click="remove(index)"
+              name="delete"
+            ></q-icon>
+            <q-icon
+              class="icon"
+              color="black"
+              v-if="IsVisibleEdit === index ? false : true"
+              @click="edit(index)"
+              name="edit"
+            ></q-icon>
+            <q-icon
+              class="icon"
+              color="black"
+              v-if="IsVisibleCancel"
+              @click="cancel"
+              name="cancel"
+            ></q-icon>
 
-        <EssentialLink
-          v-for="link in linksList"
-          :key="link.title"
-          v-bind="link"
-        />
+            <q-icon
+              class="icon"
+              color="blue"
+              v-if="IsVisibleSave === index ? false : true"
+              @click="save(index)"
+              name="save"
+            ></q-icon
+          ></span>
+        </q-item>
       </q-list>
-    </q-drawer>
-
-    <q-page-container>
-      <router-view />
-    </q-page-container>
-  </q-layout>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+import { ref } from "vue";
 
-defineOptions({
-  name: 'MainLayout'
-})
+const newtask = ref("");
+const tasks = ref([]);
+const IsVisibleRemove = ref(true);
+const IsVisibleEdit = ref("");
+const IsVisibleCancel = ref(false);
+const IsVisibleSave = ref(false);
+const IsparaVisible = ref("");
+const taskeditVisible = ref("");
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
+const taskeditStyle = ref({
+  taskeditBGwhite: {
+    "box-shadow": "0 0 1px 1px #000",
+    outline: "none",
+    border: "none",
+    width: "100%",
+    height: "100%",
+    margin: "auto",
+    fontFamily:
+      '"Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif',
+    backgroundColor: "#ffffff",
+    boxShadow: "0 0 2px 1px black",
+    padding: "5px",
   },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
+  taskeditBGwheat: {
+    "box-shadow": "0 0 2px 1px #000",
+    outline: "none",
+    border: "none",
+    width: "100%",
+    height: "100%",
+    margin: "auto",
+    fontFamily:
+      '"Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif',
+    backgroundColor: "#ffffff",
+    boxShadow: "0 0 1px 1px #000",
+    padding: "5px",
   },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
+});
+const paraStyle = ref({
+  paraBGwhite: {
+    background: "red",
+    "box-shadow": "0 0 1px 1px #000",
   },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
+  paraBGwheat: {
+    background: "#F4E0AF",
+    "box-shadow": "0 0 2px 1px white",
   },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
+});
+const style = ref({
+  "backdrop-filter": "blur(30px)",
+});
+
+const add = () => {
+  if (newtask.value === "") {
+    alert("pleasse add atleast one task *");
+  } else {
+    tasks.value.push(newtask.value);
+    newtask.value = "";
   }
-]
+};
+const remove = (index) => {
+  tasks.value.splice(index, 1);
+};
+const edit = (index) => {
+  IsVisibleSave.value = index;
+  IsVisibleEdit.value = index;
+  IsparaVisible.value = index;
+  tasks.value[index] = tasks.value[index];
+  taskeditVisible.value = index;
+};
 
-const leftDrawerOpen = ref(false)
+const save = (index) => {
+  editOpt.value = true;
+  saveOpt.value = false;
+  parahide.value[index] = false;
+  if (tasks.value[index] === newInput.value[index]) {
+    alert("already exist");
+  }
+};
 
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
+const cancel = () => {
+  newInput.value = false;
+  saveOpt.value = false;
+  editOpt.value = true;
+  cancelOpt.value = false;
+  parahide.value = true;
+};
 </script>
+<style scoped>
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  top: 100px;
+  margin: auto;
+  background-color: #d4d4d4;
+  box-shadow: 0 0 5px 1px #000;
+  height: max-content;
+  width: 500px;
+}
+.newinput {
+  height: 100%;
+  width: 85%;
+}
+.button {
+  background-color: yellow;
+  box-shadow: 0 0 5px 1px #000;
+  font-size: 10px;
+  height: 100%;
+  width: 15%;
+  margin: auto;
+  padding: 0;
+  color: black;
+  font-weight: bold;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+.inputBtn {
+  height: max-content;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  backdrop-filter: blur(40px);
+  margin: 5px;
+}
+.list {
+  width: 100%;
+  height: 100%;
+  margin: 5px;
+}
+.item {
+  display: flex;
+  justify-content: space-evenly;
+  height: 20%;
+  width: 100%;
+  color: black;
+  background-color: #d3f1df;
+  gap: 10px;
+  box-shadow: -2px 0px 1px 0px #000 inset, 2px 0px 1px 0px #000 inset;
+}
+.item p {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  box-shadow: 0 0 1px 1px #000;
+  padding: 5px;
+}
+.icons {
+  color: black;
+  width: max-content;
+  font-size: 20px;
+  display: flex;
+  margin: auto;
+  justify-content: space-evenly;
+  gap: 5px;
+}
+.newField {
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  background-color: #f5f0cd;
+  box-shadow: 0 0 1px 1px #000;
+  padding: 5px;
+}
+</style>
