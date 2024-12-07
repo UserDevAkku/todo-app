@@ -1,6 +1,6 @@
 <template>
-  <div class="container">
-    <div class="inputBtn">
+  <q-container class="flex flex-center">
+    <q-page class="inputBtn">
       <q-input
         v-model="newtask"
         label="Add your task here"
@@ -67,8 +67,8 @@
           ></span>
         </q-item>
       </q-list>
-    </div>
-  </div>
+    </q-page>
+  </q-container>
 </template>
 
 <script setup>
